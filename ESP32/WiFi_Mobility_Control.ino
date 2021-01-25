@@ -2,9 +2,8 @@
  / I'd rather add too many comments than too few.
  / Code is easier to write than it is to read, so let's not risk it. 
  / Made by Slushee (Pol Fernàndez)
- / Alpha 1.3.1 (25/01/2021)
+ / Alpha 1.3.2 (25/01/2021)
  */
-
 
 #include <WiFi.h>                               // Load Wi-Fi library
 #include <Servo_ESP32.h>                        // Load Servo Library
@@ -16,8 +15,8 @@ String request;                                 // Define the string used to sto
 String Val1;                                    // Define the value for the number of the get request
 int Valint;                                     // Define the int value of the string above
 
-const char* ssid     = "*************";         // Define the SSID to connect to
-const char* password = "******************";    // Define the password for the SSID above
+const char* ssid     = "SSID";                  // Define the SSID to connect to
+const char* password = "PASSWORD";              // Define the password for the SSID above
 
 WiFiServer server(80);                          // Set the web server to port 80
 String header;                                  // Define the string where the request is stored
@@ -31,7 +30,7 @@ Servo_ESP32 servo2;
 
 void setup()                                    // Run on startup:
   {
-   servo1.attach(led_gpio1, 1000, 2000);
+   servo1.attach(led_gpio1);
    servo2.attach(led_gpio2);
   
    Serial.begin(115200);                        // Begin serial port at 115200 baud rate
@@ -87,8 +86,8 @@ void loop()                                     // Run indefinitely
                   request = header;                  // Set the header to be the request
                   Val1= header[7];                   // Set the 7th character of the request to the hundreds number 
                   Serial.println(Val1);              // Print the value to the serial monitor
-                  brightness = Val1.toInt();         // Transfotm the 3 digit number from a string to an integer and set it to the brigness value
-                  servo1.write(180);                 // Send the 180 degree value to the servo1
+                  Valint = Val1.toInt();             // Transfotm the 3 digit number from a string to an integer and set it to the brigness value
+                  servo1.write(map(Valint, 0, 1, 0, 180));  // Send the brighness value to the LED on channel 0
                  }
              
                else if (header.indexOf("GET /2/") >= 0)  // If the header starts with GET /2/
@@ -96,8 +95,8 @@ void loop()                                     // Run indefinitely
                  request = header;                  // Set the header to be the request
                  Val1= header[7];                   // Set the 7th character of the request to the hundreds number 
                  Serial.println(Val1);              // Print the value to the serial monitor
-                 brightness = Val1.toInt();         // Transfotm the 3 digit number from a string to an integer and set it to the brigness value
-                 servo2.write(180);                 // Send the 180 degree value to the servo2
+                 Valint = Val1.toInt();         // Transfotm the 3 digit number from a string to an integer and set it to the brigness value
+                 servo2.write(map(Valint, 0, 1, 0, 180));  // Send the brighness value to the LED on channel 0
                 }
 
                 break;                               // Break out of the loop
