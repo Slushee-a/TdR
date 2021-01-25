@@ -1,9 +1,9 @@
-*/
+ /*
  / I'd rather add too many comments than too few.
  / Code is easier to write than it is to read, so let's not risk it. 
  / Made by Slushee (Pol Fernàndez)
- / Alpha 1.3 (23/01/2021)
- /*
+ / Alpha 1.3.1 (25/01/2021)
+ */
 
 
 #include <WiFi.h>                               // Load Wi-Fi library
@@ -88,7 +88,7 @@ void loop()                                     // Run indefinitely
                   Val1= header[7];                   // Set the 7th character of the request to the hundreds number 
                   Serial.println(Val1);              // Print the value to the serial monitor
                   brightness = Val1.toInt();         // Transfotm the 3 digit number from a string to an integer and set it to the brigness value
-                  servo1.write(180);  // Send the brighness value to the LED on channel 0
+                  servo1.write(180);                 // Send the 180 degree value to the servo1
                  }
              
                else if (header.indexOf("GET /2/") >= 0)  // If the header starts with GET /2/
@@ -97,7 +97,7 @@ void loop()                                     // Run indefinitely
                  Val1= header[7];                   // Set the 7th character of the request to the hundreds number 
                  Serial.println(Val1);              // Print the value to the serial monitor
                  brightness = Val1.toInt();         // Transfotm the 3 digit number from a string to an integer and set it to the brigness value
-                 servo2.write(map(brightness, 0, 1, 0, 50));  // Send the brighness value to the LED on channel 0
+                 servo2.write(180);                 // Send the 180 degree value to the servo2
                 }
 
                 break;                               // Break out of the loop
