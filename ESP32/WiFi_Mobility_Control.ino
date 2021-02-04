@@ -2,11 +2,12 @@
  / I'd rather add too many comments than too few.
  / Code is easier to write than it is to read, so let's not risk it. 
  / Made by Slushee (Pol Fernàndez)
- / Alpha 1.3.2 (25/01/2021)
+ / Alpha 1.4.3 (04/02/2021)
  */
 
 #include <WiFi.h>                               // Load Wi-Fi library
 #include <Servo_ESP32.h>                        // Load Servo Library
+#include <LiquidCrystal_I2C.h>                  // Load LCD I2C Library
 
 const byte led_gpio1 = 23;                      // Define the GPIO pin number the led is attached to
 const byte led_gpio2 = 22;                      // Define the GPIO pin number the led is attached to
@@ -25,13 +26,22 @@ unsigned long currentTime = millis();           // Define the currrent time
 unsigned long previousTime = 0;                 // Define the previous time
 const long timeoutTime = 2000;                  // Define timeout time
 
-Servo_ESP32 servo1;
-Servo_ESP32 servo2;
+Servo_ESP32 servo1;                             // Define the first motor
+Servo_ESP32 servo2;                             // Define the second motor
+
+int lcdColumns = 16;                            // Define the number of columns in the LCD
+int lcdRows = 2;                                // Define the number of rows in the LCD
+
+LiquidCrystal_I2C lcd(0x27, lcdColumns, lcdRows);  // Define the display and its adress
+
 
 void setup()                                    // Run on startup:
   {
-   servo1.attach(led_gpio1);
-   servo2.attach(led_gpio2);
+   lcd.init();                                  //Initialize the LCD
+   lcd.backlight();                             //Turn on the LCD backlight
+   
+   servo1.attach(led_gpio1);                    // Attach the first motor to a pin
+   servo2.attach(led_gpio2);                    // Attach the second motor to a pin
   
    Serial.begin(115200);                        // Begin serial port at 115200 baud rate
     
@@ -49,10 +59,14 @@ void setup()                                    // Run on startup:
    Serial.println("IP address: ");              // Print "IP adress: " to the serial port
    Serial.println(WiFi.localIP());              // Print the ESP's web server IP to the serial port
    server.begin();                              // Start the web server
+ 
+   lcd.setCursor(0, 0);                         // Set the cursor to the first row and column
+   lcd.print("ID Code: " + String(WiFi.localIP()[3]));  // Print the last 3 digits of the IP to the LCD
   }
 
 void loop()                                     // Run indefinitely
   {
+    
    WiFiClient client = server.available();      // Listen for incoming clients
   
    if (client) 
