@@ -1,8 +1,8 @@
- /*
+/*
  / I'd rather add too many comments than too few.
  / Code is easier to write than it is to read, so let's not risk it. 
  / Made by Slushee (Pol Fernàndez)
- / Alpha 1.4.3 (04/02/2021)
+ / Alpha 1.4.4 (04/02/2021)
  */
 
 #include <WiFi.h>                               // Load Wi-Fi library
@@ -52,6 +52,8 @@ void setup()                                    // Run on startup:
      {
       delay(500);                               // Wait for it to connect
       Serial.print(".");                        // Print a dot to the serial port
+      lcd.setCursor(0, 0);                      // Set the cursor to the first row and column
+      lcd.print("Connecting...");               // Print Connecting... to the LCD
      }
      
    Serial.println("");                          // Print a new line to the serial port
@@ -59,7 +61,8 @@ void setup()                                    // Run on startup:
    Serial.println("IP address: ");              // Print "IP adress: " to the serial port
    Serial.println(WiFi.localIP());              // Print the ESP's web server IP to the serial port
    server.begin();                              // Start the web server
- 
+
+   lcd.clear();
    lcd.setCursor(0, 0);                         // Set the cursor to the first row and column
    lcd.print("ID Code: " + String(WiFi.localIP()[3]));  // Print the last 3 digits of the IP to the LCD
   }
