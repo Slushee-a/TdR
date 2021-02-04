@@ -2,15 +2,15 @@
  / I'd rather add too many comments than too few.
  / Code is easier to write than it is to read, so let's not risk it. 
  / Made by Slushee (Pol Fernàndez)
- / Alpha 1.4.4 (04/02/2021)
+ / Alpha 1.4.5 (04/02/2021)
  */
 
 #include <WiFi.h>                               // Load Wi-Fi library
 #include <Servo_ESP32.h>                        // Load Servo Library
 #include <LiquidCrystal_I2C.h>                  // Load LCD I2C Library
 
-const byte led_gpio1 = 23;                      // Define the GPIO pin number the led is attached to
-const byte led_gpio2 = 22;                      // Define the GPIO pin number the led is attached to
+const byte MotorPin1 = 17;                      // Define the GPIO pin number the led is attached to
+const byte MotorPin2 = 18;                      // Define the GPIO pin number the led is attached to
 int brightness = 0;                             // Define the brighness value and default it to 0
 String request;                                 // Define the string used to store the valid get request
 String Val1;                                    // Define the value for the number of the get request
@@ -26,8 +26,8 @@ unsigned long currentTime = millis();           // Define the currrent time
 unsigned long previousTime = 0;                 // Define the previous time
 const long timeoutTime = 2000;                  // Define timeout time
 
-Servo_ESP32 servo1;                             // Define the first motor
-Servo_ESP32 servo2;                             // Define the second motor
+Servo_ESP32 Motor1;                             // Define the first motor
+Servo_ESP32 Motor2;                             // Define the second motor
 
 int lcdColumns = 16;                            // Define the number of columns in the LCD
 int lcdRows = 2;                                // Define the number of rows in the LCD
@@ -40,8 +40,8 @@ void setup()                                    // Run on startup:
    lcd.init();                                  //Initialize the LCD
    lcd.backlight();                             //Turn on the LCD backlight
    
-   servo1.attach(led_gpio1);                    // Attach the first motor to a pin
-   servo2.attach(led_gpio2);                    // Attach the second motor to a pin
+   Motor1.attach(MotorPin1);                    // Attach the first motor to a pin
+   Motor2.attach(MotorPin2);                    // Attach the second motor to a pin
   
    Serial.begin(115200);                        // Begin serial port at 115200 baud rate
     
@@ -104,7 +104,7 @@ void loop()                                     // Run indefinitely
                   Val1= header[7];                   // Set the 7th character of the request to the hundreds number 
                   Serial.println(Val1);              // Print the value to the serial monitor
                   Valint = Val1.toInt();             // Transfotm the 3 digit number from a string to an integer and set it to the brigness value
-                  servo1.write(map(Valint, 0, 1, 0, 180));  // Send the brighness value to the LED on channel 0
+                  Motor1.write(map(Valint, 0, 1, 0, 180));  // Set the motor 1 speed
                  }
              
                else if (header.indexOf("GET /2/") >= 0)  // If the header starts with GET /2/
@@ -113,7 +113,7 @@ void loop()                                     // Run indefinitely
                  Val1= header[7];                   // Set the 7th character of the request to the hundreds number 
                  Serial.println(Val1);              // Print the value to the serial monitor
                  Valint = Val1.toInt();             // Transfotm the 3 digit number from a string to an integer and set it to the brigness value
-                 servo2.write(map(Valint, 0, 1, 0, 180));  // Send the brighness value to the LED on channel 0
+                 Motor2.write(map(Valint, 0, 1, 0, 180));  // SSet the motor 2 speed
                 }
 
                 break;                               // Break out of the loop
