@@ -85,7 +85,7 @@ void loop()                                     // Run indefinitely
           char c = client.read();               // read a byte, then
           header += c;                          // add the byte to the header
           
-          if (c == '\n')                      // if the byte is a newline character
+          if (c == '\n')                        // if the byte is a newline character
             {                    
             
             if (currentLine.length() == 0)      // if the current line is blank, you got two newline characters in a row. that's the end of the client HTTP request, so send a response:
@@ -112,7 +112,7 @@ void loop()                                     // Run indefinitely
                  request = header;                  // Set the header to be the request
                  Val1= header[7];                   // Set the 7th character of the request to the hundreds number 
                  Serial.println(Val1);              // Print the value to the serial monitor
-                 Valint = Val1.toInt();         // Transfotm the 3 digit number from a string to an integer and set it to the brigness value
+                 Valint = Val1.toInt();             // Transfotm the 3 digit number from a string to an integer and set it to the brigness value
                  servo2.write(map(Valint, 0, 1, 0, 180));  // Send the brighness value to the LED on channel 0
                 }
 
