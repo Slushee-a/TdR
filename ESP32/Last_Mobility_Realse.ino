@@ -2,12 +2,13 @@
  / I'd rather add too many comments than too few.
  / Code is easier to write than it is to read, so let's not risk it. 
  / Made by Slushee (Pol Fernàndez)
- / Alpha 1.5.0 (14/03/2021)
+ / Alpha 1.6.0 (21/03/2021)
  */
 
-#include <WiFi.h>                               // Load Wi-Fi library
+#include <WiFi.h>                               // Load WiFi library
 #include <Servo_ESP32.h>                        // Load Servo Library
 #include "BluetoothSerial.h"                    // Load Bluetooth Library
+#include "SPIFFS.h"                             // Load spiffs Library
 
 const byte MotorPin1 = 17;                      // Define the GPIO pin number the led is attached to
 const byte MotorPin2 = 18;                      // Define the GPIO pin number the led is attached to
@@ -26,10 +27,13 @@ char* ssid     = "";                            // Define the SSID parameter
 char* password = "";                            // Define the password parameter
 
 WiFiServer server(80);                          // Set the web server to port 80
+
 String header;                                  // Define the string where the request is stored
-String ssid_pass;
-String ssid1;
-String pass1;
+String ssid_pass;                               // Define the string that will hold the incoming bluetooth message
+String ssid1;                                   // Define the string for the recieved SSID
+String pass1;                                   // Define the string for the recieved password
+String ssid2;                                   // Define the string for the spiffs SSID
+String pass2;                                   // Define the string for the spiffs password
 
 unsigned long currentTime = millis();           // Define the currrent time
 unsigned long previousTime = 0;                 // Define the previous time
@@ -40,12 +44,19 @@ Servo_ESP32 Motor2;                             // Define the second motor
 
 void setup()                                    // Run on startup:
   {
+
     SerialBT.begin("RoboPrototype");            // Define bluetooth beacon name and start it
    
     Motor1.attach(MotorPin1);                   // Attach the first motor to a pin
     Motor2.attach(MotorPin2);                   // Attach the second motor to a pin
   
     Serial.begin(115200);                       // Begin serial port at 115200 baud rate
+
+    if (!SPIFFS.begin(true))                    // If spiffs fails to begin
+      {
+       Serial.println("An Error has occurred while mounting SPIFFS");  // Print "An Error has occurred while mounting SPIFFS" to the serial monitor
+       return;                                  // Exit out of the loop
+      }
 
     do                                          // Execute this code if the while condition on line 92 was true last loop
       {
@@ -61,25 +72,108 @@ void setup()                                    // Run on startup:
                 {
                   ssid1 = ssid_pass.substring(0, i);  // Make whatever's before the comma the SSID string
                   pass1 = ssid_pass.substring(i+1);   // Make whatever's after it the Password string
-                  Serial.print("SSID = ");Serial.println(ssid1);  // Print the credentials to the serial port
-                  Serial.print("Password = ");Serial.println(pass1);  // Print the credentials to the serial port
-                  delay(2000);                  // Wait for a bit
-                  int n1 = ssid1.length();      // Check how long is the SSID
-                  char char_array1[n1 + 1];     // Create a char array for the SSID
-                  strcpy(char_array1, ssid1.c_str());  //Copy the ssid string to the char array
+                  Serial.print("Recieved SSID = " + ssid1);  // Print the recieved SSID to the serial port
+                  Serial.print("Recieved password = " + pass1);  // Print the recieved password to the serial monitor
+                  
+                  File file = SPIFFS.open("/SSID.txt", FILE_WRITE);  // Open the file on the location /SSID.txt
+ 
+                  if(!file)                     // If the SSID file fails to open
+                    {
+                      Serial.println("SSID file could not be opened for write");  // Print "SSID file could not be opened for write" to the serial monitor
+                      return;                   // Break out of the loop
+                    }
+ 
+                  if(file.print(ssid1))         // If the SSID file could be written to
+                    {
+                     Serial.println("SSID was written");  // Print "SSID was written" to the serial monitor
+                    }
+                    
+                  else                          // If it could't be written to        
+                    {
+                     Serial.println("SSID couldn't be written");  // Print "SSID couldn't be written" to the serial monitor
+                    }
+ 
+                  file.close();                 // Close the file
+
+                  delay(2000);
+
+                  File file2 = SPIFFS.open("/SSID.txt");  // Open the SSID file on another instance
+ 
+                  if(!file2)                    // If the SSID file could not be opened
+                    {
+                     Serial.println("SSID file could not be opened for read");  // Print "SSID file could not be opened for read" to the serial monitor
+                     return;  // Break out of the loop
+                    }
   
-                  int n2 = pass1.length();      // Check how long is the password        
+                  Serial.println("SSID file Content: ");  // Print "SSID file Content: " to the serial monitor
+ 
+                  while(file2.available())      // While the SSID file is available
+                    {
+                     Serial.write(file2.read());  // print it to the serial monitor
+                     ssid2 = String(file2.read());  // Set the ssid2 string to whatever's in the file
+                    }
+ 
+                  file2.close();                // Close the file       
+
+                  delay(2000);
+
+                  File file3 = SPIFFS.open("/PASS.txt", FILE_WRITE);  // Open the file on the location /PASS.txt
+ 
+                  if(!file3)                    // If the file could not be opened
+                    {
+                      Serial.println("Password file could not be opened for read");  // Print "Password file could not be opened for read" to the serial monitor
+                      return;                   // Break out of the loop
+                    }
+ 
+                  if(file.print(pass1))         // If the password file could be written to
+                    {
+                     Serial.println("Password was written");  // Print "Password was written" to the serial monitor
+                    }
+                    
+                  else                          // If the password file couldn't be written to
+                    {
+                     Serial.println("Password couldn't be written");  // Print "Password couldn't be written" to the serial monitor
+                    }
+ 
+                  file.close();                 // Close the file
+
+                  delay(2000);
+
+                  File file4 = SPIFFS.open("/PASS.txt");  // Open the password file in another instance
+ 
+                  if(!file4)                    // If the file could not be opened
+                    {
+                     Serial.println("Password file could not be opened for read");  // Print "Password file could not be opened for read" to the serial monitor
+                     return;                    // Break out of the loop
+                    }
+  
+                  Serial.println("Password file Content: ");  // Print "Password file Content: " to the serial monitor
+ 
+                  while(file4.available())      // While the password file is available 
+                    {
+                     Serial.write(file4.read());  // Print it to the serial monitor
+                     pass2 = String(file4.read());  // Set whatever's on the file to the pass2 string
+                    }
+ 
+                  file4.close();                 // Close the password file
+                  
+                  delay(2000);                  // Wait for a bit
+                  
+                  int n1 = ssid2.length();      // Check how long is the SSID
+                  char char_array1[n1 + 1];     // Create a char array for the SSID
+                  strcpy(char_array1, ssid2.c_str());  // Copy the ssid string to the char array
+  
+                  int n2 = pass2.length();      // Check how long is the password        
                   char char_array2[n2 + 1];     // Create a char array for the password
-                  strcpy(char_array2, pass1.c_str());  // Copy the password string to the char array
+                  strcpy(char_array2, pass2.c_str());  // Copy the password string to the char array
   
                   Serial.print("Connecting to: " + String(char_array1) + " | " + String(char_array2)); // Print to the serial monitor where you are connecting to
-
-                  WiFi.begin(char_array1, char_array2);  // Connect to the credentials
                  
                   while (WiFi.status() != WL_CONNECTED)  // While the wifi is not connected
                     {
-                     delay(500);                // Wait for it to connect
+                     delay(5000);                // Wait for it to connect
                      Serial.print(".");         // Send a dot to the serial port (to signal that it's still connecting)
+                     WiFi.begin(char_array1, char_array2);  // Connect to the credentials
                     }
                   Serial.println();             // Create a new line in the serial port (To separate whatever's new from the dots) 
                   Serial.print("Connected, IP address: ");  // Print "Connected, IP address: " to the serial port
