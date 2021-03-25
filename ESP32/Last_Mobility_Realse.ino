@@ -2,7 +2,7 @@
  / I'd rather add too many comments than too few.
  / Code is easier to write than it is to read, so let's not risk it. 
  / Made by Slushee (Pol Fernàndez)
- / Alpha 1.7.1 (25/03/2021)
+ / Alpha 1.7.2 (25/03/2021)
  */
 
 #include <WiFi.h>                               // Load WiFi library (Part of the ESP family of libraries)
@@ -14,6 +14,8 @@ const byte MotorPin2 = 18;                      // Define the GPIO pin number th
 String request;                                 // Define the string used to store the valid get request
 String Val1;                                    // Define the value for the number of the get request
 int Valint;                                     // Define the int value of the string above
+
+const int wifi_led = 16;                        // Define the pin for the WiFi indicator LED
 
 WiFiServer server(80);                          // Set the web server to port 80
 
@@ -30,12 +32,18 @@ void setup()                                    // Run on startup:
   {
     WiFi.mode(WIFI_STA);                        // Set WiFi mode. ESP32 defaults to STA+AP
 
-    Motor1.attach(MotorPin1);                   // Attach the first motor to a pin 
+    Motor1.attach(MotorPin1);                   // Attach the first motor to a pin
     Motor2.attach(MotorPin2);                   // Attach the second motor to a pin
     
     Serial.begin(115200);                       // Start the serial port (115200 is the ESP32's default baud rate.)
+
+    digitalWrite(wifi_led, LOW);                // Make sure the WiFi indicator LED is off while there is no wifi.
     
     WiFiManager wm;                             // Initilaize Wifi Manager
+
+    //wm.resetSettings();                       // Deletes the saved credentials. Used for testing
+
+    bool res;                                   // Define the res bool
     
     res = wm.autoConnect("Configure_Robot");    // Create an open AP where WiFi credentials will be set (if device isn't already connected to the internet)
 
@@ -48,11 +56,12 @@ void setup()                                    // Run on startup:
       {   
         Serial.println("WiFi connected");       // Print "WiFi connected" to the serial monitor
       }
+
+    digitalWrite(wifi_led, HIGH);              // Turn WiFi indicator LED on.
   }
 
 void loop()                                     // Run indefinitely
   { 
-   
    WiFiClient client = server.available();      // Listen for incoming clients
   
    if (client) 
