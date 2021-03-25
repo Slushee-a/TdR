@@ -30,7 +30,7 @@ void setup()                                    // Run on startup:
   {
     WiFi.mode(WIFI_STA);                        // Set WiFi mode. ESP32 defaults to STA+AP
 
-    Motor1.attach(MotorPin1);                   // Attach the first motor to a pin
+    Motor1.attach(MotorPin1);                   // Attach the first motor to a pin 
     Motor2.attach(MotorPin2);                   // Attach the second motor to a pin
     
     Serial.begin(115200);                       // Start the serial port (115200 is the ESP32's default baud rate.)
