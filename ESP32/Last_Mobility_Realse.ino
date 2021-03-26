@@ -2,7 +2,7 @@
  / I'd rather add too many comments than too few.
  / Code is easier to write than it is to read, so let's not risk it. 
  / Made by Slushee (Pol Fernàndez)
- / Alpha 1.7.3 (25/03/2021)
+ / Alpha 1.7.4 (26/03/2021)
  */
 
 #include <WiFi.h>                               // Load WiFi library (Part of the ESP family of libraries)
@@ -58,6 +58,8 @@ void setup()                                    // Run on startup:
       }
 
     digitalWrite(wifi_led, HIGH);              // Turn WiFi indicator LED on.
+
+    server.begin();                            // Start the local WiFi server
   }
 
 void loop()                                     // Run indefinitely
@@ -66,6 +68,7 @@ void loop()                                     // Run indefinitely
   
    if (client) 
    {                                            // If a new client connects,
+
     String currentLine = "";                    // make a String to hold incoming data from the client
     currentTime = millis();                     // Update time
     previousTime = currentTime;                 // Update time
@@ -88,7 +91,6 @@ void loop()                                     // Run indefinitely
                client.println("Content-type:text/html");
                client.println("Connection: close");
                client.println();
-            
                
                if (header.indexOf("GET /1/") >= 0)   // If the header starts with GET /1/
                  {
@@ -96,7 +98,7 @@ void loop()                                     // Run indefinitely
                   Val1= header[7];                   // Set the 7th character of the request to the hundreds number 
                   Serial.println(Val1);              // Print the value to the serial monitor
                   Valint = Val1.toInt();             // Transfotm the 3 digit number from a string to an integer and set it to the speed value
-                  Motor1.write(map(Valint, 0, 1, 0, 180));  // Set the motor 1 speed
+                  Motor1.write(map(Valint, 0, 15, 48, 180));  // Set the motor 1 speed
                  }
              
                else if (header.indexOf("GET /2/") >= 0)  // If the header starts with GET /2/
@@ -105,7 +107,7 @@ void loop()                                     // Run indefinitely
                  Val1= header[7];                   // Set the 7th character of the request to the hundreds number 
                  Serial.println(Val1);              // Print the value to the serial monitor
                  Valint = Val1.toInt();             // Transfotm the 3 digit number from a string to an integer and set it to the speed value
-                 Motor2.write(map(Valint, 0, 1, 0, 180));  // SSet the motor 2 speed
+                 Motor2.write(map(Valint, 0, 15, 48, 180));  // Set the motor 1 speed
                 }
 
                 break;                          // Break out of the loop
