@@ -1,4 +1,5 @@
 # TdR
 This repository is for my TdR.
 
-https://img.shields.io/badge/ESP-32-dd0019
+
+![ESP 32](https://img.shields.io/badge/ESP-32-dd0019)
