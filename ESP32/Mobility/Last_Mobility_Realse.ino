@@ -2,12 +2,13 @@
  / I'd rather add too many comments than too few.
  / Code is easier to write than it is to read, so let's not risk it. 
  / Made by Slushee (Pol Fernàndez)
- / Alpha 1.7.5 (29/03/2021)
+ / Alpha 1.7.6 (20/04/2021)
  */
 
 #include <WiFi.h>                               // Load WiFi library (Part of the ESP family of libraries)
 #include <Servo_ESP32.h>                        // Load Servo library (Part of the ESP family of libraries)
 #include <WiFiManager.h>                        // Load WiFi manager library (By tzapu on Github: https://github.com/tzapu/WiFiManager)
+#include "ESPmDNS.h"                            // Load mDNS library (Part of the ESP family of libraries)
 
 const byte MotorPin1 = 17;                      // Define the GPIO pin number the led is attached to
 const byte MotorPin2 = 18;                      // Define the GPIO pin number the led is attached to
@@ -28,6 +29,43 @@ const long timeoutTime = 2000;                  // Define timeout time
 Servo_ESP32 Motor1;                             // Define the first motor
 Servo_ESP32 Motor2;                             // Define the second motor
 
+void AdvertiseServices(const char *MyName)      // Create AdvertiseServices function (Will be called later on setup)
+  {
+    if (MDNS.begin(MyName))                     // Start mDNS service, if it started correctly:
+     {
+      Serial.println("mDNS responder started"); // Print "mDNS responder started" to the serial port
+      Serial.print("I am: ");                   // Print "I am: " to the serial port
+      Serial.println(MyName);                   // Print the DNS name to the serial port.
+
+      MDNS.addService("n8i-mlp", "tcp", 23);    // Start mDNS-sd service called n8i-mlp on tcp port 23        
+     }
+
+    else                                        // If mDNS server couldn't be started:
+     {
+      while(1)
+       {
+        Serial.println("mDNS could not be started.");  // Print "mDNS could not be started." to the serial monitor
+        delay(1000);                            // Wait a 1000ms      
+       }
+     }
+  }
+
+ uint16_t GetDeviceId()                         // Define GetDeviceId function
+  {
+   #if defined(ARDUINO_ARCH_ESP32)              // If the device is an arduino arch esp32
+     return ESP.getEfuseMac();                  // Get the Efuse Mac adress
+   #else                                        // If it is any other ESP
+     return ESP.getChipId();                    // Get the ESP chip ID
+   #endif                                       // End condition
+  }
+
+  String MakeMine(const char *NameTemplate)     // Create the friendly name/ID for the device
+   {
+    uint16_t uChipId = GetDeviceId();           // Get the chip's native ID
+    String Result = String(NameTemplate) + String(uChipId, HEX);  // Concavinate the friendly name with the device ID
+    return Result;                              // Return the value to the function
+   }
+
 void setup()                                    // Run on startup:
   {
     WiFi.mode(WIFI_STA);                        // Set WiFi mode. ESP32 defaults to STA+AP
@@ -41,7 +79,7 @@ void setup()                                    // Run on startup:
     
     WiFiManager wm;                             // Initilaize Wifi Manager
 
-    wm.setSTAStaticIPConfig(IPAddress(192,168,1,254), IPAddress(10,0,1,1), IPAddress(255,255,255,0));  // Set static IP, static gateway and subnet
+    // wm.setSTAStaticIPConfig(IPAddress(192,168,1,254), IPAddress(10,0,1,1), IPAddress(255,255,255,0));  // Set static IP, static gateway and subnet
 
     //wm.resetSettings();                       // Deletes the saved credentials. Used for testing
 
@@ -62,6 +100,10 @@ void setup()                                    // Run on startup:
     digitalWrite(wifi_led, HIGH);              // Turn WiFi indicator LED on.
 
     server.begin();                            // Start the local WiFi server
+    
+    String MyName = MakeMine("FindMobileRobot");  // Define a name for the AdvertiseServies function
+    AdvertiseServices(MyName.c_str());         // Call AdvertiseServices function with the defined name
+    
   }
 
 void loop()                                     // Run indefinitely
