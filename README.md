@@ -1,6 +1,6 @@
 # 3D Printed Moldular Robot
 
-![mobility](https://img.shields.io/badge/Mobility-α_1.8.1-success) ![modules](https://img.shields.io/badge/Modules-0.0.0-red) ![app](https://img.shields.io/badge/App-α_2.0.1-sucess)
+![mobility](https://img.shields.io/badge/Mobility-α_1.8.1-success) ![modules](https://img.shields.io/badge/Modules-α1.0.1-success) ![app](https://img.shields.io/badge/App-α_2.0.1-sucess)
 
 An open source ESP32 firmware package made for a robot, acompanied by an android app for the operation of the firmware
 
