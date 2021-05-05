@@ -11,4 +11,4 @@ An open source ESP32 firmware package made for a robot, acompanied by an android
 - Interactions made with HTTP GET requests
 - Change WiFi credentials OTA
 - Self Discovery with mDNS-sd (Apple Bonjour)
-- Serial communicatio between MCUs
+- Serial communication between MCUs
