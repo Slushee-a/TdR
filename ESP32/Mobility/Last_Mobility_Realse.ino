@@ -2,7 +2,7 @@
  / I'd rather add too many comments than too few.
  / Code is easier to write than it is to read, so let's not risk it. 
  / Made by Slushee (Pol Fernàndez)
- / Alpha 1.8.1 (02/05/2021)
+ / Alpha 1.8.2 (06/05/2021)
  */
 
 #include <WiFi.h>                               // Load WiFi library (Part of the ESP family of libraries)
@@ -35,7 +35,7 @@ void AdvertiseServices(const char *MyName)      // Create AdvertiseServices func
 {
   if(MDNS.begin(MyName))                        // Start mDNS service, if it started correctly:
   {
-    MDNS.addService("n8i-mlp", "tcp", 23);      // Start mDNS-sd service called n8i-mlp on tcp port 23        
+    MDNS.addService("Configure_Robot", "tcp", 23);  // Start mDNS-sd service called n8i-mlp on tcp port 23        
   }
 
   else                                          // If mDNS server couldn't be started:
@@ -65,6 +65,8 @@ String MakeMine(const char *NameTemplate)       // Create the friendly name/ID f
 
 void setup()                                    // Run on startup:
 {
+  pinMode(wifi_led, OUTPUT);                    // Set the WiFi indicator LED as output
+
   WiFi.mode(WIFI_STA);                          // Set WiFi mode. ESP32 defaults to STA+AP
   
   Motor1.attach(MotorPin1);                     // Attach the first motor to a pin
@@ -83,15 +85,15 @@ void setup()                                    // Run on startup:
   bool res;                                     // Define the res bool
     
   res = wm.autoConnect("Configure_Robot");      // Create an open AP where WiFi credentials will be set (if device isn't already connected to the internet)
-
+  
   if(!res)                                      // If it failed to connect to WiFi or set up the AP
   {
-    digitalWrite(wifi_led, LOW);                // Turn WiFi indicator LED off.
+    digitalWrite(wifi_led, LOW);                // Turn WiFi indicator LED off.                               
   } 
       
   else                                          // Otherwise,
   {   
-    digitalWrite(wifi_led, HIGH);               // Turn WiFi indicator LED on.
+    digitalWrite(wifi_led, HIGH);               // Turn WiFi indicator LED on.                                        
   }
 
   server.begin();                               // Start the local WiFi server
@@ -133,16 +135,22 @@ void loop()                                     // Run indefinitely
              
             if(header.indexOf("GET /1/") >= 0)   // If the header starts with GET /1/
             {
-              Val1= header[7];                   // Set the 7th character of the request to the hundreds number 
+              Val1 = header[7];                   // Set the 7th character of the request to the hundreds number 
               Valint = Val1.toInt();             // Transfotm the 3 digit number from a string to an integer and set it to the speed value
               Motor1.write(map(Valint, 0, 15, 48, 180));  // Set the motor 1 speed
             }
              
             else if(header.indexOf("GET /2/") >= 0)  // If the header starts with GET /2/
             {
-              Val1= header[7];                   // Set the 7th character of the request to the hundreds number 
+              Val1 = header[7];                   // Set the 7th character of the request to the hundreds number 
               Valint = Val1.toInt();             // Transfotm the 3 digit number from a string to an integer and set it to the speed value
               Motor2.write(map(Valint, 0, 9, 48, 180));  // Set the motor 1 speed
+            }
+
+            else if(header.indexOf("GET /STOP") >= 0)
+            {
+              Motor1.write(48);
+              Motor2.write(48);
             }
 
             else if(header.indexOf(/*GET REQUEST HERE*/) >= 0)
