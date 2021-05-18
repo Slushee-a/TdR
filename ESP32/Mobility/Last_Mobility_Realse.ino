@@ -137,7 +137,7 @@ void loop()                                     // Run indefinitely
             {
               Val1 = header[7];                   // Set the 7th character of the request to the hundreds number 
               Valint = Val1.toInt();             // Transfotm the 3 digit number from a string to an integer and set it to the speed value
-              Motor1.write(map(Valint, 0, 15, 48, 180));  // Set the motor 1 speed
+              Motor1.write(map(Valint, 0, 9, 48, 180));  // Set the motor 1 speed
             }
              
             else if(header.indexOf("GET /2/") >= 0)  // If the header starts with GET /2/
