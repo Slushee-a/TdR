@@ -2,7 +2,7 @@
  / I'd rather add too many comments than too few.
  / Code is easier to write than it is to read, so let's not risk it. 
  / Made by Slushee (Pol Fernàndez)
- / Alpha 1.8.3 (06/05/2021)
+ / Alpha 1.8.3 (18/05/2021)
  */
 
 #include <WiFi.h>                               // Load WiFi library (Part of the ESP family of libraries)
