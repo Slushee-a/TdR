@@ -2,7 +2,7 @@
  / I'd rather add too many comments than too few.
  / Code is easier to write than it is to read, so let's not risk it. 
  / Made by Slushee (Pol Fernàndez)
- / Alpha 1.8.3 (18/05/2021)
+ / Alpha 1.8.4 (04/06/2021)
  */
 
 #include <WiFi.h>                               // Load WiFi library (Part of the ESP family of libraries)
@@ -35,7 +35,7 @@ void AdvertiseServices(const char *MyName)      // Create AdvertiseServices func
 {
   if(MDNS.begin(MyName))                        // Start mDNS service, if it started correctly:
   {
-    MDNS.addService("Configure_Robot", "tcp", 23);  // Start mDNS-sd service called n8i-mlp on tcp port 23        
+    MDNS.addService("Configure_Robot", "tcp", 23);  // Start mDNS-sd service called Configure_Robot on tcp port 23        
   }
 
   else                                          // If mDNS server couldn't be started:
@@ -76,7 +76,7 @@ void setup()                                    // Run on startup:
 
   digitalWrite(wifi_led, LOW);                  // Make sure the WiFi indicator LED is off while there is no wifi.
     
-  WiFiManager wm;                               // Initilaize Wifi Manager
+  WiFiManager wm;                               // Define Wifi Manager
 
   // wm.setSTAStaticIPConfig(IPAddress(192,168,1,254), IPAddress(10,0,1,1), IPAddress(255,255,255,0));  // Set static IP, static gateway and subnet
 
@@ -100,11 +100,29 @@ void setup()                                    // Run on startup:
     
   String MyName = MakeMine("FindMobileRobot");  // Define a name for the AdvertiseServies function
   AdvertiseServices(MyName.c_str());            // Call AdvertiseServices function with the defined name
+
+  Motor1.write(48);                            // Stop the motors. Stopping the motors arms the ESCs
+  Motor2.write(48);                            // Otherwise the motors will not move (Because safety)
+ 
+  //wm.getWiFiPass();                           // WIP. For camera module
+  //wm.getWifiSSID();                           // I will use this to send the wifi credentials to the ESP32CAM
     
 }
 
 void loop()                                     // Run indefinitely
-{ 
+{
+  WiFiManager wm;                               // Define WiFi Manager
+
+  if(wm.getWLStatusString(WiFiClass::status()) == "WL_CONNECTED")  // If WiFi is connected
+  {
+    digitalWrite(wifi_led, HIGH);               // Turn WiFi indicator LED on.  
+  }
+
+  else                                          // Otherwise,
+  {
+    digitalWrite(wifi_led, LOW);                // Turn WiFi indicator LED off. 
+  }
+
   WiFiClient client = server.available();       // Listen for incoming clients
   
   if(client) 
@@ -153,14 +171,14 @@ void loop()                                     // Run indefinitely
               Motor2.write(48);
             }
 
-            else if(header.indexOf(/*GET REQUEST HERE*/) >= 0)
-            {
-              while (Sender.available()) 
-              {               
-                Sender.write(/*MESSAGE FOR MODULE MCU HERE*/);                
-                Sender.write('\n');
-              };
-            }
+            //else if(header.indexOf(/*GET REQUEST HERE*/) >= 0)
+            //{
+            //  while (Sender.available()) 
+            //  {               
+            //    Sender.write(/*MESSAGE FOR MODULE MCU HERE*/);                
+            //    Sender.write('\n');
+            //  };
+            //}
 
             break;                             // Break out of the loop
           } 
