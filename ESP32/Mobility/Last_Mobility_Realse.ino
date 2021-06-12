@@ -2,7 +2,7 @@
  / I'd rather add too many comments than too few.
  / Code is easier to write than it is to read, so let's not risk it. 
  / Made by Slushee (Pol Fernàndez)
- / Alpha 1.8.4 (04/06/2021)
+ / Alpha 1.8.6 (12/06/2021)
  */
 
 #include <WiFi.h>                               // Load WiFi library (Part of the ESP family of libraries)
@@ -20,7 +20,9 @@ const int wifi_led = 4;                         // Define the pin for the WiFi i
 
 WiFiServer server(80);                          // Set the web server to port 80
 
-HardwareSerial Sender(1);                       // Initialize the harware's serial port 1 with the name Sender (0 is for programming)
+HardwareSerial ModuleSender(1);                 // Initialize the harware's serial port 1 with the name Module Sender (0 is for programming)
+
+String RecievedString;
 
 String header;                                  // Define the string where the request is stored
 
@@ -35,7 +37,7 @@ void AdvertiseServices(const char *MyName)      // Create AdvertiseServices func
 {
   if(MDNS.begin(MyName))                        // Start mDNS service, if it started correctly:
   {
-    MDNS.addService("Configure_Robot", "tcp", 23);  // Start mDNS-sd service called Configure_Robot on tcp port 23        
+    MDNS.addService("FindMyRobot", "tcp", 23);  // Start mDNS-sd service called Configure_Robot on tcp port 23        
   }
 
   else                                          // If mDNS server couldn't be started:
@@ -72,19 +74,15 @@ void setup()                                    // Run on startup:
   Motor1.attach(MotorPin1);                     // Attach the first motor to a pin
   Motor2.attach(MotorPin2);                     // Attach the second motor to a pin
 
-  Sender.begin(115200, SERIAL_8N1, 17, 16);     // Start the sender serial port (Baud Rate, Protocol, TXd pin, RXd pin)
+  ModuleSender.begin(115200, SERIAL_8N1, 17, 16);     // Start the ModuleSender serial port (Baud Rate, Protocol, TXd pin, RXd pin)
 
   digitalWrite(wifi_led, LOW);                  // Make sure the WiFi indicator LED is off while there is no wifi.
     
   WiFiManager wm;                               // Define Wifi Manager
 
-  // wm.setSTAStaticIPConfig(IPAddress(192,168,1,254), IPAddress(10,0,1,1), IPAddress(255,255,255,0));  // Set static IP, static gateway and subnet
-
-  //wm.resetSettings();                         // Deletes the saved credentials. Used for testing
-
   bool res;                                     // Define the res bool
     
-  res = wm.autoConnect("Configure_Robot");      // Create an open AP where WiFi credentials will be set (if device isn't already connected to the internet)
+  res = wm.autoConnect("FindMyRobot");          // Create an open AP where WiFi credentials will be set (if device isn't already connected to the internet)
   
   if(!res)                                      // If it failed to connect to WiFi or set up the AP
   {
@@ -93,20 +91,16 @@ void setup()                                    // Run on startup:
       
   else                                          // Otherwise,
   {   
-    digitalWrite(wifi_led, HIGH);               // Turn WiFi indicator LED on.                                        
+    digitalWrite(wifi_led, HIGH);               // Turn WiFi indicator LED on.                                      
   }
 
   server.begin();                               // Start the local WiFi server
     
-  String MyName = MakeMine("FindMobileRobot");  // Define a name for the AdvertiseServies function
+  String MyName = MakeMine("FindMyRobot");      // Define a name for the AdvertiseServies function
   AdvertiseServices(MyName.c_str());            // Call AdvertiseServices function with the defined name
 
-  Motor1.write(48);                            // Stop the motors. Stopping the motors arms the ESCs
-  Motor2.write(48);                            // Otherwise the motors will not move (Because safety)
- 
-  //wm.getWiFiPass();                           // WIP. For camera module
-  //wm.getWifiSSID();                           // I will use this to send the wifi credentials to the ESP32CAM
-    
+  Motor1.write(48);                             // Stop the motors. Stopping the motors arms the ESCs
+  Motor2.write(48);                             // Otherwise the motors will not move (Because safety) 
 }
 
 void loop()                                     // Run indefinitely
@@ -115,7 +109,7 @@ void loop()                                     // Run indefinitely
 
   if(wm.getWLStatusString(WiFiClass::status()) == "WL_CONNECTED")  // If WiFi is connected
   {
-    digitalWrite(wifi_led, HIGH);               // Turn WiFi indicator LED on.  
+    digitalWrite(wifi_led, HIGH);               // Turn WiFi indicator LED on.
   }
 
   else                                          // Otherwise,
@@ -173,10 +167,10 @@ void loop()                                     // Run indefinitely
 
             //else if(header.indexOf(/*GET REQUEST HERE*/) >= 0)
             //{
-            //  while (Sender.available()) 
+            //  while (ModuleSender.available()) 
             //  {               
-            //    Sender.write(/*MESSAGE FOR MODULE MCU HERE*/);                
-            //    Sender.write('\n');
+            //    ModuleSender.write(/*MESSAGE FOR MODULE MCU HERE*/);                
+            //    ModuleSender.write('\n');
             //  };
             //}
 
